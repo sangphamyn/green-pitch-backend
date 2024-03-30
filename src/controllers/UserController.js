@@ -85,7 +85,7 @@ const getDetailsUser = async (req, res) => {
 };
 const refreshToken = async (req, res) => {
   try {
-    let token = req.cookies.refreshToken;
+    let token = req.body.headers.token;
     if (!token) {
       return res.status(200).json({
         status: "error",
@@ -100,9 +100,23 @@ const refreshToken = async (req, res) => {
     });
   }
 };
+const logoutUser = async (req, res) => {
+  try {
+    res.clearCookie("refresh_token");
+    return res.status(200).json({
+      status: "success",
+      message: "Đăng xuất thành công",
+    });
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
+    });
+  }
+};
 module.exports = {
   register,
   login,
   refreshToken,
   getDetailsUser,
+  logoutUser,
 };

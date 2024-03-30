@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const { genneralAccessToken, genneralRefreshToken } = require("./JwtService");
 const register = (user) => {
   return new Promise(async (resolve, reject) => {
-    const { name, email, phone, password } = user;
+    const { name, email, phone, password, role } = user;
     try {
       let existingUser = await User.findOne({ email: email });
       let message = {};
@@ -30,6 +30,7 @@ const register = (user) => {
         email,
         phone,
         password: hash,
+        role,
       });
       if (createdUser) {
         resolve({
@@ -45,7 +46,7 @@ const register = (user) => {
 };
 const login = (user) => {
   return new Promise(async (resolve, reject) => {
-    const { username, password } = user;
+    const { username, password, role } = user;
     try {
       const existingUser = await User.findOne({
         $or: [{ email: username }, { phone: username }],
@@ -70,6 +71,23 @@ const login = (user) => {
           status: "error",
           message: message,
         });
+        return;
+      }
+      if (existingUser.role != role) {
+        if (existingUser.role == 2) {
+          message["permission"] = "Bạn đã là chủ sân";
+          resolve({
+            status: "error",
+            message: message,
+          });
+        }
+        if (existingUser.role == 1) {
+          message["permission"] = "Bạn đã là cầu thủ";
+          resolve({
+            status: "error",
+            message: message,
+          });
+        }
         return;
       }
       const access_token = await genneralAccessToken({
